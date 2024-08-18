@@ -18,7 +18,7 @@ li {
   margin-bottom: 2rem;
   padding: 1.5rem;
   border-radius: 1rem;
-  max-width: 12rem;
+  max-width: 15rem;
   list-style-type: none;
   overflow-wrap: break-word;
   box-shadow: 0.1rem 0.1rem 1.5rem rgba(0, 0, 0, 0.3);
@@ -32,7 +32,7 @@ ul {
     justify-content: baseline;
     padding-left: 0;
     flex-wrap: wrap;
-    border: solid 2px #1db954;
+    /* border: solid 2px #1db954; */
 }
 
 @media (max-width: 720px) {
@@ -65,7 +65,7 @@ ul {
 .flexContainer {
     display: flex;
     flex-direction: row;
-    border: solid 1px red;
+    /* border: solid 1px red; */
     flex-wrap: wrap;
 }
 
