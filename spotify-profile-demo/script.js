@@ -109,7 +109,6 @@ function populateUI(profile) {
     const profileImage = new Image(200, 200);
     profileImage.src = profile.images[1].url;
     document.getElementById("avatar").appendChild(profileImage);
-    document.getElementById("imgUrl").innerText = profile.images[1].url;
   }
   document.getElementById("id").innerText = profile.id;
   document.getElementById("email").innerText = profile.email;

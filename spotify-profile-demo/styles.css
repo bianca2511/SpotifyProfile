@@ -1,0 +1,13 @@
+body{
+    background-color: #191414;
+    color: white ;
+    font-family: Helvetica, sans-serif;
+}
+
+a {
+    color: #1DB954;
+}
+
+#displayName {
+    color: #1DB954;
+}
