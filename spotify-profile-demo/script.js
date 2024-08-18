@@ -2,16 +2,16 @@ const clientId = "60183ea4bf804cc48dfe6fae76168e88";
 const params = new URLSearchParams(window.location.search);
 const code = params.get("code");
 
-
 // store the token in the local storage so it persists after page refresh
-let storedToken = localStorage.getItem("accessToken");
-let storedExpiration = localStorage.getItem("expirationTime");
+let storedToken = sessionStorage.getItem("accessToken");
+let storedExpiration = sessionStorage.getItem("expirationTime");
 
 // if the token is not expired, continue to use it 
 if (storedToken !== undefined && storedExpiration && Date.now() < storedExpiration) {
   const profile = await fetchProfile(storedToken);
   console.log(profile);
-  populateUI(profile);
+  populateProfileUI(profile);
+  populateLikedSongsList(profile, likedSongs);
 
 } else if (!code) { // if the initial code does not exist, authenticate with spotify
 
@@ -19,12 +19,14 @@ if (storedToken !== undefined && storedExpiration && Date.now() < storedExpirati
 
 } else { // if token does not exist or is expired, ask for one
   const tokenData = await getAccessToken(clientId, code);
-  localStorage.setItem("accessToken", tokenData.access_token);
-  localStorage.setItem("expirationTime", tokenData.expirationTime);
+  sessionStorage.setItem("accessToken", tokenData.access_token);
+  sessionStorage.setItem("expirationTime", tokenData.expirationTime);
 
   const profile = await fetchProfile(tokenData.access_token);
-  console.log(profile);
-  populateUI(profile);
+  const likedSongs = await fetchLikedSongs(tokenData,access_token);
+
+  populateProfileUI(profile);
+  populateLikedSongsList(likedSongs);
 }
 
 ///////////////////////////////////////////////
@@ -34,13 +36,13 @@ export async function redirectToAuthCodeFlow(clientId) {
   const verifier = generateCodeVerifier(128);
   const challenge = await generateCodeChallenge(verifier);
 
-  localStorage.setItem("verifier", verifier);
+  sessionStorage.setItem("verifier", verifier);
 
   const params = new URLSearchParams();
   params.append("client_id", clientId);
   params.append("response_type", "code");
   params.append("redirect_uri", "http://localhost:5173/callback");
-  params.append("scope", "user-read-private user-read-email");
+  params.append("scope", "user-read-private user-read-email user-library-read");
   params.append("code_challenge_method", "S256");
   params.append("code_challenge", challenge);
 
@@ -69,7 +71,7 @@ async function generateCodeChallenge(codeVerifier) {
 
 // function for getting the access token and calculating the expiration time
 async function getAccessToken(clientId, code) {
-  const verifier = localStorage.getItem("verifier");
+  const verifier = sessionStorage.getItem("verifier");
 
   const params = new URLSearchParams();
   params.append("client_id", clientId);
@@ -91,7 +93,6 @@ async function getAccessToken(clientId, code) {
   return { access_token, expirationTime };
 }
 
-
 ///////////////////////////////////////////////////////////////////
 
 async function fetchProfile(token) {
@@ -103,7 +104,16 @@ async function fetchProfile(token) {
   return await result.json();
 }
 
-function populateUI(profile) {
+async function fetchLikedSongs(token) {
+  const result = await fetch("https://api.spotify.com/v1/me/tracks", {
+    method: "GET",
+    headers: {Authorization: `Bearer ${token}`},
+  });
+
+  return await result.json();
+}
+
+function populateProfileUI(profile) {
   document.getElementById("displayName").innerText = profile.display_name;
   if (profile.images[1]) {
     const profileImage = new Image(200, 200);
@@ -116,4 +126,9 @@ function populateUI(profile) {
   document
     .getElementById("uri")
     .setAttribute("href", profile.external_urls.spotify);
+}
+
+function populateLikedSongsList(profile, likedSongs) {
+  document.getElementById("displayName2").innerText = profile.display_name.substring(0, profile.display_name.indexOf(' '));
+  
 }
