@@ -64,6 +64,7 @@ export async function getAccessToken(clientId, code) {
       body: params
   });
 
+  console.log(result);
   const { access_token } = await result.json();
   return access_token;
 }
@@ -78,11 +79,11 @@ async function fetchProfile(token) {
 
 function populateUI(profile) {
   document.getElementById("displayName").innerText = profile.display_name;
-  if (profile.images[0]) {
+  if (profile.images[1]) {
       const profileImage = new Image(200, 200);
-      profileImage.src = profile.images[0].url;
+      profileImage.src = profile.images[1].url;
       document.getElementById("avatar").appendChild(profileImage);
-      document.getElementById("imgUrl").innerText = profile.images[0].url;
+      document.getElementById("imgUrl").innerText = profile.images[1].url;
   }
   document.getElementById("id").innerText = profile.id;
   document.getElementById("email").innerText = profile.email;
