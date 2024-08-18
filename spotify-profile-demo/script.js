@@ -3,36 +3,43 @@ const params = new URLSearchParams(window.location.search);
 const code = params.get("code");
 
 // store the token in the local storage so it persists after page refresh
-let storedToken = sessionStorage.getItem("accessToken");
-let storedExpiration = sessionStorage.getItem("expirationTime");
+let storedToken = sessionStorage.getItem("tokenData");
 
-// if the token is not expired, continue to use it 
-if (storedToken !== undefined && storedExpiration && Date.now() < storedExpiration) {
-  const profile = await fetchProfile(storedToken);
+/** @type {AccessToken | null} */
+let parsedToken = null;
+if (storedToken !== null) {
+  parsedToken = JSON.parse(storedToken);
+}
+
+if (code !== null) {
+  // if there is an authentication code, exchange it for a token
+  const tokenData = await getAccessToken(clientId, code);
+  if (tokenData !== null) {
+    sessionStorage.setItem("tokenData", JSON.stringify(tokenData));
+  }
+
+  window.location.href = '/'; // IMPORTANT LINE, DO NOT REMOVE
+} else if (parsedToken !== null && Date.now() < parsedToken.expiration_time) {
+  // if the token is not expired, continue to use it
+  const profile = await fetchProfile(parsedToken);
+  const likedSongs = await fetchLikedSongs(parsedToken);
+
   console.log(profile);
   populateProfileUI(profile);
   populateLikedSongsList(profile, likedSongs);
-
-} else if (!code) { // if the initial code does not exist, authenticate with spotify
+} else {
+  // if the initial code does not exist, authenticate with spotify
 
   redirectToAuthCodeFlow(clientId);
-
-} else { // if token does not exist or is expired, ask for one
-  const tokenData = await getAccessToken(clientId, code);
-  sessionStorage.setItem("accessToken", tokenData.access_token);
-  sessionStorage.setItem("expirationTime", tokenData.expirationTime);
-
-  const profile = await fetchProfile(tokenData.access_token);
-  const likedSongs = await fetchLikedSongs(tokenData,access_token);
-
-  populateProfileUI(profile);
-  populateLikedSongsList(likedSongs);
 }
 
 ///////////////////////////////////////////////
 // Redirecting to the Spotify authentication //
 
-export async function redirectToAuthCodeFlow(clientId) {
+/**
+ * @param {string} clientId
+ */
+async function redirectToAuthCodeFlow(clientId) {
   const verifier = generateCodeVerifier(128);
   const challenge = await generateCodeChallenge(verifier);
 
@@ -49,6 +56,9 @@ export async function redirectToAuthCodeFlow(clientId) {
   document.location = `https://accounts.spotify.com/authorize?${params.toString()}`;
 }
 
+/**result.ok
+ * @param {number} length
+ */
 function generateCodeVerifier(length) {
   let text = "";
   let possible =
@@ -60,6 +70,9 @@ function generateCodeVerifier(length) {
   return text;
 }
 
+/**
+ * @param {string} codeVerifier
+ */
 async function generateCodeChallenge(codeVerifier) {
   const data = new TextEncoder().encode(codeVerifier);
   const digest = await window.crypto.subtle.digest("SHA-256", data);
@@ -69,7 +82,20 @@ async function generateCodeChallenge(codeVerifier) {
     .replace(/=+$/, "");
 }
 
-// function for getting the access token and calculating the expiration time
+/**
+ * @typedef AccessToken
+ * @property {string} access_token
+ * @property {number} expiration_time
+ */
+
+/**
+ * function for getting the access token and calculating the expiration time
+ *
+ * @param {string} clientId
+ * @param {string} code
+ *
+ * @returns {Promise<AccessToken | null>}
+ */
 async function getAccessToken(clientId, code) {
   const verifier = sessionStorage.getItem("verifier");
 
@@ -78,7 +104,9 @@ async function getAccessToken(clientId, code) {
   params.append("grant_type", "authorization_code");
   params.append("code", code);
   params.append("redirect_uri", "http://localhost:5173/callback");
-  params.append("code_verifier", verifier);
+  if (verifier !== null) {
+    params.append("code_verifier", verifier);
+  }
 
   const result = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
@@ -86,49 +114,77 @@ async function getAccessToken(clientId, code) {
     body: params,
   });
 
+  if (!result.ok) {
+    return null;
+  }
+
   const { access_token, expires_in } = await result.json();
 
-  const expirationTime = Date.now() + expires_in * 1000;
+  const expiration_time = Date.now() + expires_in * 1000;
 
-  return { access_token, expirationTime };
+  return { access_token, expiration_time };
 }
 
 ///////////////////////////////////////////////////////////////////
 
+/**
+ * @param {AccessToken} token
+ */
 async function fetchProfile(token) {
   const result = await fetch("https://api.spotify.com/v1/me", {
     method: "GET",
-    headers: { Authorization: `Bearer ${token}` },
+    headers: { Authorization: `Bearer ${token.access_token}` },
   });
+  // TODO: check result.ok
 
   return await result.json();
 }
 
+/**
+ * @param {AccessToken} token
+ */
 async function fetchLikedSongs(token) {
   const result = await fetch("https://api.spotify.com/v1/me/tracks", {
     method: "GET",
-    headers: {Authorization: `Bearer ${token}`},
+    headers: { Authorization: `Bearer ${token.access_token}` },
   });
+  // TODO: check result.ok
 
   return await result.json();
 }
 
+/**
+ * @param {{ display_name: string; images: { url: string; }[]; id: string; email: string; uri: string; external_urls: { spotify: string; }; }} profile
+ */
 function populateProfileUI(profile) {
+  // @ts-ignore
   document.getElementById("displayName").innerText = profile.display_name;
   if (profile.images[1]) {
     const profileImage = new Image(200, 200);
     profileImage.src = profile.images[1].url;
+    // @ts-ignore
     document.getElementById("avatar").appendChild(profileImage);
   }
+  // @ts-ignore
   document.getElementById("id").innerText = profile.id;
+  // @ts-ignore
   document.getElementById("email").innerText = profile.email;
+  // @ts-ignore
   document.getElementById("uri").innerText = profile.uri;
+  // @ts-ignore
   document
     .getElementById("uri")
     .setAttribute("href", profile.external_urls.spotify);
 }
 
+/**
+ * @param {{ display_name: string; }} profile
+ * @param {undefined} [likedSongs]
+ */
 function populateLikedSongsList(profile, likedSongs) {
-  document.getElementById("displayName2").innerText = profile.display_name.substring(0, profile.display_name.indexOf(' '));
-  
+  // @ts-ignore
+  document.getElementById("displayName2").innerText =
+    profile.display_name.substring(0, profile.display_name.indexOf(" "));
 }
+
+export {};
