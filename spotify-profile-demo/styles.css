@@ -26,21 +26,21 @@ li {
 }
 
 ul {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: baseline;
-    padding-left: 0;
-    flex-wrap: wrap;
-    /* border: solid 2px #1db954; */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: baseline;
+  padding-left: 0;
+  flex-wrap: wrap;
+  /* border: solid 2px #1db954; */
 }
 
 @media (max-width: 720px) {
-    ul {
-      flex-direction: column;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+  ul {
+    flex-direction: column;
+    align-items: center;
+    flex-wrap: wrap;
+  }
 }
 /* Polaroid container */
 .polaroid {
@@ -54,31 +54,64 @@ ul {
 }
 
 #avatar img {
-    width: 100%; 
-    height: auto; 
-  }
+  width: 100%;
+  height: auto;
+}
 
 .nameContainer {
   padding: 1rem 0;
 }
 
 .flexContainer {
-    display: flex;
-    flex-direction: row;
-    /* border: solid 1px red; */
-    flex-wrap: wrap;
+  display: flex;
+  flex-direction: row;
+  /* border: solid 1px red; */
+  flex-wrap: wrap;
 }
 
 @media (max-width: 720px) {
-    .flexContainer {
-      flex-direction: column;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+  .flexContainer {
+    flex-direction: column;
+    align-items: center;
+    flex-wrap: wrap;
   }
+}
 
 .infoTopic {
-    font-size: small;
-    font-weight: bold;
-    color: #1db954;
+  font-size: small;
+  font-weight: bold;
+  color: #1db954;
+}
+
+table {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+}
+
+th {
+  letter-spacing: 2px;
+}
+
+td {
+  letter-spacing: 1px;
+  padding: 10px;
+}
+
+tbody td {
+  text-align: center;
+}
+
+tbody tr {
+  border-radius: 2px;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #2e2727;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #1db954;
+  color: #191414;
 }
