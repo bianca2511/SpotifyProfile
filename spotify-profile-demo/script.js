@@ -212,8 +212,6 @@ function populateLikedSongsList(profile, likedSongs) {
 
     const timestampCell = row.insertCell(3);
     timestampCell.innerHTML = timestamp;
-
-    // likedSongsTable?.appendChild(row);
   });
 }
 
