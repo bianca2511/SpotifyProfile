@@ -18,13 +18,13 @@ if (code !== null) {
     sessionStorage.setItem("tokenData", JSON.stringify(tokenData));
   }
 
-  window.location.href = '/'; // IMPORTANT LINE, DO NOT REMOVE
+  window.location.href = "/"; // IMPORTANT LINE, DO NOT REMOVE
 } else if (parsedToken !== null && Date.now() < parsedToken.expiration_time) {
   // if the token is not expired, continue to use it
   const profile = await fetchProfile(parsedToken);
   const likedSongs = await fetchLikedSongs(parsedToken);
 
-  console.log(profile);
+  // console.log(profile);
   populateProfileUI(profile);
   populateLikedSongsList(profile, likedSongs);
 } else {
@@ -179,12 +179,42 @@ function populateProfileUI(profile) {
 
 /**
  * @param {{ display_name: string; }} profile
- * @param {undefined} [likedSongs]
  */
+// @ts-ignore
 function populateLikedSongsList(profile, likedSongs) {
   // @ts-ignore
   document.getElementById("displayName2").innerText =
-    profile.display_name.substring(0, profile.display_name.indexOf(" "));
+    profile.display_name.split(" ")[0];
+
+  const likedSongsTable = document.getElementById("likedSongsTableBody");
+
+  // @ts-ignore
+  likedSongs.items.forEach((element) => {
+    const track = element.track;
+    const artistName = track.artists[0].name;
+    const trackName = track.name;
+    const popularity = track.popularity;
+    const timestamp = element.added_at;
+
+    console.log(trackName, artistName, popularity, timestamp);
+
+    // @ts-ignore
+    const row = likedSongsTable?.insertRow();
+
+    const nameCell = row.insertCell(0);
+    nameCell.innerHTML = trackName;
+
+    const artistCell = row.insertCell(1);
+    artistCell.innerHTML = artistName;
+
+    const popularityCell = row.insertCell(2);
+    popularityCell.innerHTML = popularity;
+
+    const timestampCell = row.insertCell(3);
+    timestampCell.innerHTML = timestamp;
+
+    // likedSongsTable?.appendChild(row);
+  });
 }
 
 export {};

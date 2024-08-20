@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <title>My Spotify Profile</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="styles.css" />
     <script src="script.js" type="module"></script>
   </head>
@@ -20,21 +20,34 @@
           </div>
         </div>
         <ul>
-          <li><span class="infoTopic">User ID: </span> <span id="id"></span></li>
-          <li><span class="infoTopic">Email: </span><span id="email"></span></li>
-          <li><span class="infoTopic">Spotify URI: </span><a id="uri" href="#"></a></li>
+          <li>
+            <span class="infoTopic">User ID: </span> <span id="id"></span>
+          </li>
+          <li>
+            <span class="infoTopic">Email: </span><span id="email"></span>
+          </li>
+          <li>
+            <span class="infoTopic">Spotify URI: </span
+            ><a id="uri" href="#"></a>
+          </li>
         </ul>
       </div>
     </section>
     <section id="likedSongs">
-      <h2><span id="displayName2" class="name"></span>&apos;s favorite songs</h2>
-      <table>
-        <tr>
-          <th>Name</th>
-          <th>Artist</th>
-          <th>Popularity</th>
-          <th>Timestamp</th>
-        </tr>
+      <h2>
+        <span id="displayName2" class="name"></span>&apos;s favorite songs
+      </h2>
+      <table id="likedSongsTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Artist</th>
+            <th>Popularity</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody id="likedSongsTableBody"></tbody>
+      </table>
     </section>
   </body>
 </html>
